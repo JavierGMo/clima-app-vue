@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clima app</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.10.0/css/all.css" integrity="sha384-AYmEC3Yw5cVb3ZcuHtOA93w35dYTsvhLPVnYs9eStHfGJvOvKxVfELGroGkvsg+p" crossorigin="anonymous"/>
+</head>
+<body>
+    <div id="app-weather" class="d-fx container-principal">
+        <div class="c-bar-search">
+            <transition name="component-fade" mode="out-in">
+                <div v-if="!show">
+                    <div class="d-fx f-between contain-btns-search">
+                        <div><button class="c-btn-search-p" @click="show = !show">Search for places</button></div>
+                        <div><button class="c-btn-rounded"><i class="fas fa-location-arrow"></i></button></div>
+                    </div><!--Buttons-->
+                    <div class="d-fx f-column f-center">
+                        <div class="d-fx f-center containt-img-bar"><img :src="src(weatherToday.img_abbr)" alt="" class="img-bar"></div><!--img weather-->
+                        <div class="cont-deegree"><p class="color-white-light"><span class="txt-deegree-unit-bar">{{ weatherToday.the_temp }}</span><span class="txt-deegree-measure-bar color-gray-fifty">°{{ unitMeasure }}</span></div><!--units-->
+                        <div class="weather-state-bar"><p><span class="weather-state-bar">{{ weatherToday.weather_state_name }}</span></p></div><!--state-->
+                    </div><!--Info weather-->
+                    <div class="d-fx f-column f-center">
+                        <div>
+                            <p class="color-gray-fifty">Today . {{ weatherToday.date }}</p>
+                        </div><!--Date-->
+                        <div>
+                            <p class="color-gray-fifty"><i class="fas fa-map-marker-alt"></i> {{ weatherToday.place }}</p>
+                        </div><!--Place-->
+                    </div><!--Date and place-->
+                </div><!--container date and place-->
+            </transition>
+            <transition name="component-fade" mode="out-in">
+                <div v-if="show" class="container-result-place">
+                    <div class="d-fx f-between">
+                        <div class="c-form-search">
+                            <input type="text" v-model="searchLocation" class="ipt-search-place" :value="searchLocation">
+                            <button class="btn-search-place" v-on:click.prevent="searchWeatherBTN">search</button>
+                        </div><!--input search-->
+                        <div><button class="btn-close" @click="show = !show"><i class="fas fa-times"></i></button></div>
+                    </div>
+                    <div class="place-result"><p>london</p> <i></i></div>
+                    <div class="place-result"><p>barcelona</p> <i></i></div>
+                    <div class="place-result"><p>long beach</p> <i></i></div>
+                </div><!--container search -->
+            </transition>
+
+        </div><!--Bar search location-->
+        <div class="c-content-weather">
+            <div class="c-content-units d-fx f-fend">
+                <!-- <div><button class="c-btn-rounded c-btn-deegree" @click="showDeegrees = !showDeegrees" v-bind:class="[showDeegrees ? cDeegreeSelect : '']">°{{ unitMeasure }}</button></div>
+                <div><button class="c-btn-rounded c-btn-deegree" @click="showDeegrees = !showDeegrees" v-bind:class="[!showDeegrees ? cDeegreeSelect : '']">°F</button></div> -->
+                <div><button class="c-btn-rounded c-btn-deegree" v-on:click="celsius" v-bind:class="[showDeegrees ? cDeegreeSelect : '']">°C</button></div>
+                <div><button class="c-btn-rounded c-btn-deegree" v-on:click="fahrenheit" v-bind:class="[!showDeegrees ? cDeegreeSelect : '']">°F</button></div>
+            </div>
+            <div class="c-contents-cards d-fx f-center">
+                <div v-for="(weather, index) in nextDays" class="c-card-w d-fx f-column f-center ">
+                    <div>
+                        <p>
+                            <span v-if="index === 0" class="color-white-light">Tomorrow</span>
+                            <span v-else class="color-white-light">{{ weather.date }}</span>
+                        </p>
+                    </div>
+                    <div class="d-fx f-center"><img :src="src(weather.img_abbr)" alt="icon" class="c-card-img-weat"></div><!--Img card-->
+                    <div><p><span class="c-temper-max color-white-light">{{ weather.max_temp }}°{{ unitMeasure }}</span> <span class="c-temper-min">{{ weather.min_temp }}°{{ unitMeasure }}</span></p></div><!--Text-->
+                </div><!--Card weather-->
+            </div><!--cards-->
+            <div>
+                <div><h4>Today's Hightlights</h4></div>
+                <div class="d-fx contain-cards-weather f-center">
+                    <div class="d-fx card-info-today">
+                        <div class="c-card-general d-fx f-column f-center">
+                            <div><p><span>Wind status</span></p></div>
+                            <div><p class="color-white-light"><span class="txt-today-weather">{{ weatherToday.wind_speed }}</span><span class="color-gray-fifty txt-complement-weather">mph</span></p></div>
+                            <div class="content-wind-status"><p><i class="far fa-compass"></i> <span>{{ weatherToday.wind_direction_compass }}</span></p></div>
+                        </div><!--wind status-->
+                        <div class="c-card-general d-fx f-column f-center">
+                            <div><p><span>Humidity</span></p></div>
+                            <div><p class="color-white-light"><span class="txt-today-weather">{{ weatherToday.humidity }}</span><span class="color-gray-fifty txt-complement-weather">%</span></p></div>
+                            <div class="content-bar-humidity p-relative">
+                                <div class="p-absolute posi-top-humidity pos-0">0</div>
+                                <div class="p-absolute posi-top-humidity pos-50">50</div>
+                                <div class="p-absolute posi-top-humidity pos-100">100</div>
+                                <div class="p-absolute posi-bottom-humidity pos-percentagee">%</div>
+                                <progress max="100" :value="weatherToday.humidity"></progress><!--bar humidity-->
+                            </div>
+                            
+                        </div><!--humidity-->
+                    </div><!--wind status and humidity-->
+                    <div class="d-fx card-info-today">
+                        <div class="c-card-general d-fx f-column f-center">
+                            <div><p><span>Visibility</span></p></div>
+                            <div><p class="color-white-light"><span class="txt-today-weather">{{ weatherToday.visibility }}</span><span class="color-gray-fifty txt-complement-weather">miles</span></p></div>
+                        </div><!--visibility-->
+                        <div class="c-card-general d-fx f-column f-center">
+                            <div><p><span>Air pressure</span></p></div>
+                            <div><p class="color-white-light"><span class="txt-today-weather">{{ weatherToday.air_pressure }}</span><span class="color-gray-fifty txt-complement-weather">mb</span></p></div>
+                        </div><!--Air pressure-->
+                    </div><!--visibility and air pressure-->
+                    
+                </div><!--Data Hightlights-->
+            </div><!--Hightlights-->
+            <div>
+                <div><p>Javier Mora &copy; DevChallenges</p></div>
+            </div><!--footer-->
+        </div><!--Content data weather-->
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
